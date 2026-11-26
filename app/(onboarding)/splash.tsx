@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { SplashScreen } from '@/features/auth/screens/SplashScreen';
 
-export default function SplashScreen() {
-  return <ScreenPlaceholder title="onboarding/splash" />;
-}
+export default SplashScreen;
