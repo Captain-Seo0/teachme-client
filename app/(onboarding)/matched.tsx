@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { MatchedScreen } from '@/features/onboarding/screens/MatchedScreen';
 
-export default function MatchedScreen() {
-  return <ScreenPlaceholder title="onboarding/matched" />;
-}
+export default MatchedScreen;
