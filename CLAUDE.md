@@ -32,7 +32,17 @@ React Native + Expo(expo-router, TypeScript) 클라이언트. 백엔드는 Supab
 - `app/` — expo-router 라우트: `(onboarding)`, `(tabs)`(홈/티치톡/MY), `lesson`
 - `src/components/` 공용 컴포넌트, `src/features/` 기능별 코드, `src/hooks/`, `src/theme/`, `src/types/`
 - `src/lib/` — `supabase.ts`(클라이언트), `api.ts`(Edge Function 호출 래퍼)
+- `src/types/` — 서버 스키마를 옮긴 타입(`profile.ts`: Profile/StudyConcern/AiStudent, `school.ts`). 스키마는 teachme-server `docs/db-schema.md`를 따른다.
 - import alias: `@/*` → `src/*`
+
+## 인증·온보딩 흐름
+- `src/features/auth/AuthProvider.tsx`가 세션과 profile 상태(`profileState`: loading/none/ready/error)를 들고 있다. profiles 행이 있으면 온보딩 완료로 본다. 온보딩 완료 후에는 `refreshProfile()`을 호출한다.
+- 라우팅은 루트 `app/_layout.tsx`의 `Redirect` 한 곳에서만 결정한다 (`app/index.tsx`는 만들지 않는다).
+  - 세션 없음 → login / 세션 있음 + profile 없음 → `(onboarding)` profile → school → concern → matched → welcome / profile 있음 → `(tabs)`
+  - 네이티브 스플래시는 폰트·세션·profile 조회가 끝날 때까지 유지된다. profile이 있어도 `matched`/`welcome`은 온보딩을 마치도록 막지 않는다.
+- 온보딩 중간 값은 `src/features/onboarding/OnboardingProvider.tsx`(메모리)에 두고, concern 단계에서 profiles에 한 번만 insert한다. 닉네임 중복(23505)이면 profile 단계로 돌려보낸다.
+- concern → AI 학생 매핑은 `src/features/onboarding/constants.ts`의 `CONCERN_TO_STUDENT` 한 곳에만 둔다.
+- 외부 호출(Supabase 테이블/RPC, Edge Function)은 `profileService.ts`, `schoolService.ts`를 통해서만 한다. Edge Function 에러는 `ApiError`(`status`, `code`)로 온다.
 
 ## 명령어
 - `npx expo start` 개발 서버 / `npm run typecheck` 타입 검사 / `npm run lint`
@@ -48,12 +58,12 @@ React Native + Expo(expo-router, TypeScript) 클라이언트. 백엔드는 Supab
 - `spacing`(4·8·12·16·20·24·32·40, 키=px), `layout`(screenMargin 20, cardGap 12, ctaHeight 56), `radius`(xs~3xl, full), `shadow`(none/e1/e2/brand).
 - 폰트 로딩: `src/theme/fonts.ts`의 `fontAssets`를 `useAppFonts`(`src/hooks/`)가 로드하고, `app/_layout.tsx`에서 로딩이 끝날 때까지 스플래시를 유지한다.
 
-**공통 컴포넌트 (`src/components/`)**: `Button`(variant primary/secondary/outline/text, size L/M, disabled·loading·fullWidth·leftIcon·rightIcon), `TextInput`(label, helperText, error, disabled), `Checkbox`(약관 동의용). 그 외는 각 기능 브랜치에서 필요할 때 추가한다.
+**공통 컴포넌트 (`src/components/`)**: `Button`(variant primary/secondary/outline/text, size L/M, disabled·loading·fullWidth·leftIcon·rightIcon), `TextInput`(label, helperText, helperTone, error, disabled), `Checkbox`(약관 동의용). 그 외는 각 기능 브랜치에서 필요할 때 추가한다.
 
 **못 옮긴 항목 / 확인 필요**
 - **Paperlogy(display 폰트)**: display 토큰이 Bold(700)만 쓰므로 `Paperlogy-7Bold.ttf`만 로드한다(`assets/fonts/Paperlogy/`). 이 폴더에는 사용하는 파일만 둔다. display 토큰에 다른 굵기가 필요해지면 해당 파일을 추가하고 `fonts.ts`에 등록한다. 라이선스는 사용자가 파일을 제공한 것으로 갈음했으며 앱스토어 배포 전에 라이선스 조건 확인이 필요하다.
 - Figma의 "Nanum Pen"은 Google Fonts의 Nanum Pen Script로 가정했다. 다른 폰트라면 알려줘야 한다.
-- 다크 모드 컴포넌트 적용, Button의 S 크기·icon 버튼·Focus 링, TextInput의 leftIcon·clearable·성공 메시지 색·에러 아이콘, Checkbox 외 선택 컨트롤(radio/switch/segmented), Chip/Badge, Card, Navigation, Feedback은 구현하지 않았다.
+- 다크 모드 컴포넌트 적용, Button의 S 크기·icon 버튼·Focus 링, TextInput의 leftIcon·clearable·에러 아이콘, Checkbox 외 선택 컨트롤(radio/switch/segmented), Chip/Badge, Card, Navigation, Feedback은 구현하지 않았다.
 - Figma 변수/스타일이 아닌 프레임에 그려진 값이라 토큰이 아니다. 스케일에 없는 컴포넌트 고유 값(Button M 반경 14, Input 라벨 간격 6·테두리 1.5·높이 52, Checkbox 18)은 해당 컴포넌트 안의 상수로 두었다.
 - 디자인 문서 내 불일치: Button M 라벨이 상태 표에서는 15, 크기 표에서는 14(코드는 15 = `subtitle` 사용). 흰 글자 on green.500은 대비 2.6:1(AA 미달)이라는 디자인 메모가 있으나 디자인대로 구현했다.
 - 그림자는 CSS blur를 RN `shadowRadius`(blur/2)로 환산했고, Android는 `elevation` 근사값이다.
