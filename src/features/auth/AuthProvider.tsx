@@ -12,6 +12,8 @@ import { AppState } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
+import { AuthUiError, toAuthMessage } from './authErrors';
+
 type AuthContextValue = {
   session: Session | null;
   /** True until the stored session has been read. */
@@ -19,6 +21,11 @@ type AuthContextValue = {
   /** Launch gate: false until the splash animation has finished once per app launch. */
   splashDone: boolean;
   completeSplash: () => void;
+  /**
+   * Signs out (email and social sessions alike). Throws AuthUiError with a Korean message on failure.
+   * On success the session becomes null and the root layout redirects to login.
+   */
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -55,9 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const completeSplash = useCallback(() => setSplashDone(true), []);
 
+  const signOut = useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (e) {
+      throw new AuthUiError(toAuthMessage(e));
+    }
+  }, []);
+
   const value = useMemo(
-    () => ({ session, loading, splashDone, completeSplash }),
-    [session, loading, splashDone, completeSplash],
+    () => ({ session, loading, splashDone, completeSplash, signOut }),
+    [session, loading, splashDone, completeSplash, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
