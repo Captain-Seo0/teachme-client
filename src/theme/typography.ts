@@ -3,8 +3,7 @@ import type { TextStyle } from 'react-native';
 // Source: Figma 03 Typography (node 1:960).
 // Font family names must match the keys registered in src/theme/fonts.ts.
 export const fontFamily = {
-  // TODO: swap to Paperlogy Bold once the font file/license is confirmed (see CLAUDE.md "디자인 시스템").
-  display: 'NotoSansKR_700Bold',
+  display: 'Paperlogy_700Bold', // titles, numeric metrics (display tokens are Bold only)
   body: {
     regular: 'NotoSansKR_400Regular',
     medium: 'NotoSansKR_500Medium',
