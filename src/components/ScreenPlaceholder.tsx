@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing, typography } from '@/theme';
+import { colors, layout, typography } from '@/theme';
 
 type Props = { title: string };
 
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.background,
+    padding: layout.screenMargin,
+    backgroundColor: colors.bg.canvas,
   },
-  title: { ...typography.title, color: colors.text },
+  title: { ...typography.heading2, color: colors.text.primary },
 });
