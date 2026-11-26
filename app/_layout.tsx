@@ -40,9 +40,9 @@ function RootNavigator() {
 
   // App start -> splash, then:
   //   no session                      -> login
-  //   session, no profiles row        -> onboarding (profile -> school -> concern -> matched -> welcome)
+  //   session, no profiles row        -> onboarding (profile -> school -> concern -> welcome)
   //   session, profiles row exists    -> (tabs)
-  // A profile makes onboarding "complete", but matched/welcome (and the screens before them, while the
+  // A profile makes onboarding "complete", but welcome (and the screens before it, while the
   // profile is being created) are left alone so the user can finish the flow.
   let redirect: Href | null = null;
   if (!splashDone) {

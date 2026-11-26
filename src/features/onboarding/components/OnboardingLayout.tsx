@@ -15,15 +15,26 @@ const TITLE_GAP = 6;
 type Props = {
   /** 1~4. Omit to hide the progress bar. */
   step?: 1 | 2 | 3 | 4;
-  title: string;
+  /** Omit (with subtitle) when the screen draws its own heading, e.g. the welcome screen. */
+  title?: string;
   subtitle?: string;
+  /** Vertically centers the content instead of starting under the title. */
+  centerContent?: boolean;
   /** Omit to hide the back button. */
   onBack?: () => void;
   cta: { label: string; onPress: () => void; disabled?: boolean; loading?: boolean };
   children?: ReactNode;
 };
 
-export function OnboardingLayout({ step, title, subtitle, onBack, cta, children }: Props) {
+export function OnboardingLayout({
+  step,
+  title,
+  subtitle,
+  centerContent = false,
+  onBack,
+  cta,
+  children,
+}: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -58,15 +69,17 @@ export function OnboardingLayout({ step, title, subtitle, onBack, cta, children 
 
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, centerContent && styles.contentCentered]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.titleBlock}>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-          </View>
-          <View style={styles.body}>{children}</View>
+          {title || subtitle ? (
+            <View style={styles.titleBlock}>
+              {title ? <Text style={styles.title}>{title}</Text> : null}
+              {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+            </View>
+          ) : null}
+          <View style={title || subtitle ? styles.body : undefined}>{children}</View>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -114,6 +127,7 @@ const styles = StyleSheet.create({
   progress: { flexDirection: 'row', gap: SEGMENT.gap, alignItems: 'center' },
   segment: { width: SEGMENT.width, height: SEGMENT.height, borderRadius: SEGMENT.radius },
   content: { paddingHorizontal: layout.screenMargin, paddingBottom: spacing[24] },
+  contentCentered: { flexGrow: 1, justifyContent: 'center' },
   titleBlock: { marginTop: spacing[24], gap: TITLE_GAP },
   title: { ...typography.heading2, fontFamily: fontFamily.display, color: colors.text.primary },
   subtitle: { ...typography.body2, color: colors.text.tertiary },

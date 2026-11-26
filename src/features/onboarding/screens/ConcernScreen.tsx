@@ -6,7 +6,7 @@ import { colors, spacing, typography } from '@/theme';
 
 import { ConcernOption } from '../components/ConcernOption';
 import { OnboardingLayout } from '../components/OnboardingLayout';
-import { CONCERN_OPTIONS, CONCERN_TO_STUDENT, STUDENT_INFO } from '../constants';
+import { CONCERN_OPTIONS, CONCERN_TO_STUDENT, ILLUSTRATIONS, STUDENT_INFO } from '../constants';
 import { useOnboarding } from '../OnboardingProvider';
 import { NicknameTakenError, ProfileServiceError } from '../profileService';
 
@@ -26,8 +26,8 @@ export function ConcernScreen() {
     setSubmitting(true);
     try {
       await submit();
-      // The profile now exists; the root layout keeps matched/welcome reachable.
-      router.replace('/(onboarding)/matched');
+      // The profile now exists (insert finished); the root layout keeps welcome reachable.
+      router.replace('/(onboarding)/welcome');
     } catch (e) {
       if (e instanceof NicknameTakenError) {
         // Send the user back to the nickname step.
@@ -62,6 +62,7 @@ export function ConcernScreen() {
             key={option.value}
             label={option.label}
             studentName={STUDENT_INFO[CONCERN_TO_STUDENT[option.value]].name}
+            studentImage={ILLUSTRATIONS.students[CONCERN_TO_STUDENT[option.value]]}
             selected={draft.concern === option.value}
             onPress={() => update({ concern: option.value })}
           />

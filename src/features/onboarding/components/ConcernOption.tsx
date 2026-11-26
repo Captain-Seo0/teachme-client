@@ -1,9 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 import { colors, fontFamily, radius, spacing, typography } from '@/theme';
 
-// Source: Figma 회원가입 4/4 option cards (node 1:188). The AI student face illustrations are not
-// ported yet (feature/onboarding-matching): the avatar shows the student's first character.
+// Source: Figma 회원가입 4/4 option cards (node 1:188).
 const AVATAR_SIZE = 48;
 const RADIO_SIZE = 20;
 const BORDER = 1;
@@ -13,11 +12,13 @@ const CARD_PADDING = 14;
 type Props = {
   label: string;
   studentName: string;
+  /** The matched AI student's face illustration. */
+  studentImage: ImageSourcePropType;
   selected: boolean;
   onPress: () => void;
 };
 
-export function ConcernOption({ label, studentName, selected, onPress }: Props) {
+export function ConcernOption({ label, studentName, studentImage, selected, onPress }: Props) {
   return (
     <Pressable
       accessibilityRole="radio"
@@ -31,7 +32,7 @@ export function ConcernOption({ label, studentName, selected, onPress }: Props) 
       ]}
     >
       <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{studentName[0]}</Text>
+        <Image source={studentImage} accessibilityLabel={studentName} style={styles.avatarImage} />
       </View>
       <View style={styles.texts}>
         <Text style={[styles.label, selected && { color: colors.green[800] }]}>{label}</Text>
@@ -65,10 +66,9 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: colors.illustration.skin,
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  avatarText: { ...typography.title1, color: colors.green[800] },
+  avatarImage: { width: AVATAR_SIZE, height: AVATAR_SIZE },
   texts: { flex: 1, gap: spacing[4] },
   label: { ...typography.body1, fontFamily: fontFamily.body.bold, color: colors.text.primary },
   match: { ...typography.caption, color: colors.text.tertiary },
