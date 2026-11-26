@@ -51,7 +51,7 @@ React Native + Expo(expo-router, TypeScript) 클라이언트. 백엔드는 Supab
 **공통 컴포넌트 (`src/components/`)**: `Button`(variant primary/secondary/outline/text, size L/M, disabled·loading·fullWidth·leftIcon·rightIcon), `TextInput`(label, helperText, error, disabled), `Checkbox`(약관 동의용). 그 외는 각 기능 브랜치에서 필요할 때 추가한다.
 
 **못 옮긴 항목 / 확인 필요**
-- **Paperlogy(display 폰트)**: 폰트 파일과 라이선스 확인이 필요해 번들하지 않았다. 현재 `fontFamily.display`는 Noto Sans KR Bold로 대체. 파일을 확보하면 `fonts.ts`와 `typography.ts`의 TODO 한 곳만 바꾸면 된다.
+- **Paperlogy(display 폰트)**: display 토큰이 Bold(700)만 쓰므로 `Paperlogy-7Bold.ttf`만 로드한다(`assets/images/fonts/Paperlogy/`). 다른 굵기 파일도 같은 폴더에 있으나 번들하지 않았다. display 토큰에 다른 굵기가 필요해지면 `fonts.ts`에 추가한다. 라이선스는 사용자가 파일을 제공한 것으로 갈음했으며 앱스토어 배포 전에 라이선스 조건 확인이 필요하다.
 - Figma의 "Nanum Pen"은 Google Fonts의 Nanum Pen Script로 가정했다. 다른 폰트라면 알려줘야 한다.
 - 다크 모드 컴포넌트 적용, Button의 S 크기·icon 버튼·Focus 링, TextInput의 leftIcon·clearable·성공 메시지 색·에러 아이콘, Checkbox 외 선택 컨트롤(radio/switch/segmented), Chip/Badge, Card, Navigation, Feedback은 구현하지 않았다.
 - Figma 변수/스타일이 아닌 프레임에 그려진 값이라 토큰이 아니다. 스케일에 없는 컴포넌트 고유 값(Button M 반경 14, Input 라벨 간격 6·테두리 1.5·높이 52, Checkbox 18)은 해당 컴포넌트 안의 상수로 두었다.
