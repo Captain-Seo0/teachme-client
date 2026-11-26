@@ -3,10 +3,11 @@ import type { ImageSourcePropType } from 'react-native';
 import { colors } from '@/theme';
 import type { AiStudent, Grade, StudentType, StudyConcern } from '@/types/profile';
 
-// Single source of truth for the concern -> first AI student mapping (db-schema.md `study_concern`).
+// Single source of truth for the concern -> first AI student mapping. Follows Figma 회원가입 4/4
+// (node 1:181); teachme-server docs/db-schema.md still lists the first two the other way round.
 export const CONCERN_TO_STUDENT: Record<StudyConcern, AiStudent> = {
-  just_for_fun: 'dapdapi',
-  cant_explain_terms: 'chorongi',
+  just_for_fun: 'chorongi',
+  cant_explain_terms: 'dapdapi',
   confused_causality: 'ttokttogi',
   trips_on_tricky_questions: 'kkanjogi',
 };

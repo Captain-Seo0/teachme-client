@@ -45,7 +45,7 @@ React Native + Expo(expo-router, TypeScript) 클라이언트. 백엔드는 Supab
 - 학생 구분(`student_type`): 중학생·고등학생만 학년을 받고, 중학생은 중학교, 고등학생은 고등학교만 검색 결과에 보인다(클라이언트 필터). N수생·일반인은 학년과 학교가 선택/없음이라 `grade`, `school_*`를 null로 저장한다 — **서버 `profiles.grade`, `school_name`이 nullable이어야 한다**(db-schema.md 기준 아직 NOT NULL).
 - 사진: `expo-image-picker`로 고르고 `expo-image-manipulator`로 512px 정사각형 JPEG로 변환한다(`avatarService.ts`). `avatar_url`은 공개 URL에 `?v=타임스탬프`를 붙여 저장한다.
 - 일러스트(`assets/images/`)의 경로는 `src/features/onboarding/constants.ts`의 `ILLUSTRATIONS` 한 곳에서만 참조한다. `chalkboard.png`에는 환영 문구와 학생 3명이 이미 그려져 있어 그 위에 덧붙이지 않는다.
-- concern → AI 학생 매핑은 `src/features/onboarding/constants.ts`의 `CONCERN_TO_STUDENT` 한 곳에만 둔다.
+- concern → AI 학생 매핑은 `src/features/onboarding/constants.ts`의 `CONCERN_TO_STUDENT` 한 곳에만 둔다. 카드의 얼굴·"→ OO 매칭"·CTA 문구·저장값(`matched_student`)이 모두 이 상수를 따른다. 현재 Figma 기준: just_for_fun→chorongi, cant_explain_terms→dapdapi, confused_causality→ttokttogi, trips_on_tricky_questions→kkanjogi (teachme-server `db-schema.md`의 표는 앞 둘이 반대로 적혀 있어 서버 문서 갱신이 필요하다).
 - 외부 호출(Supabase 테이블/RPC, Edge Function)은 `profileService.ts`, `schoolService.ts`를 통해서만 한다. Edge Function 에러는 `ApiError`(`status`, `code`)로 온다.
 
 ## 명령어
