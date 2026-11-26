@@ -21,6 +21,8 @@ const BORDER_ACTIVE = 1.5;
 type Props = Omit<TextInputProps, 'editable' | 'style'> & {
   label?: string;
   helperText?: string;
+  /** 'success' colors the helper text green (e.g. "사용할 수 있는 닉네임이에요"). */
+  helperTone?: 'default' | 'success';
   /** Error message. When set, the field and helper text switch to the error state. */
   error?: string;
   disabled?: boolean;
@@ -28,7 +30,17 @@ type Props = Omit<TextInputProps, 'editable' | 'style'> & {
 };
 
 export const TextInput = forwardRef<ComponentRef<typeof RNTextInput>, Props>(function TextInput(
-  { label, helperText, error, disabled = false, containerStyle, onFocus, onBlur, ...rest },
+  {
+    label,
+    helperText,
+    helperTone = 'default',
+    error,
+    disabled = false,
+    containerStyle,
+    onFocus,
+    onBlur,
+    ...rest
+  },
   ref,
 ) {
   const [focused, setFocused] = useState(false);
@@ -78,7 +90,15 @@ export const TextInput = forwardRef<ComponentRef<typeof RNTextInput>, Props>(fun
         />
       </View>
       {message ? (
-        <Text style={[styles.helper, hasError && { color: colors.semantic.error }]}>{message}</Text>
+        <Text
+          style={[
+            styles.helper,
+            !hasError && helperTone === 'success' && { color: colors.text.brand },
+            hasError && { color: colors.semantic.error },
+          ]}
+        >
+          {message}
+        </Text>
       ) : null}
     </View>
   );
