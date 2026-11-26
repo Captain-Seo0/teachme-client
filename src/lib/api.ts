@@ -7,11 +7,15 @@ export class ApiError extends Error {
     message: string,
     public readonly status?: number,
     public readonly details?: unknown,
+    /** Server error code, e.g. "invalid_query" (from `{ error: { code, message } }`). */
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
+
+type ErrorBody = { error?: { code?: string; message?: string } | string };
 
 /**
  * Call a Supabase Edge Function. Throws ApiError on any failure.
@@ -27,12 +31,12 @@ export async function callFunction<TResponse, TBody = unknown>(
 
   if (error) {
     if (error instanceof FunctionsHttpError) {
-      const details = await error.context.json().catch(() => undefined);
-      throw new ApiError(
-        details?.error ?? error.message,
-        error.context.status,
-        details,
-      );
+      const details: ErrorBody | undefined = await error.context.json().catch(() => undefined);
+      const serverError = details?.error;
+      const message =
+        typeof serverError === 'string' ? serverError : (serverError?.message ?? error.message);
+      const code = typeof serverError === 'object' ? serverError?.code : undefined;
+      throw new ApiError(message, error.context.status, details, code);
     }
     if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
       throw new ApiError(`Network error while calling "${name}"`, undefined, error);
