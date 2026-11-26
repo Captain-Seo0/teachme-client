@@ -2,30 +2,59 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { TextInput } from '@/components/TextInput';
 import { colors, fontFamily, radius, spacing, typography } from '@/theme';
+import type { StudentType } from '@/types/profile';
 import type { SelectedSchool } from '@/types/school';
 
 import { GradeSelector } from '../components/GradeSelector';
 import { OnboardingLayout } from '../components/OnboardingLayout';
-import { SCHOOL_QUERY_MAX } from '../constants';
+import { SchoolSearchBox } from '../components/SchoolSearchBox';
+import { StudentTypeCard } from '../components/StudentTypeCard';
+import { SCHOOL_QUERY_MAX, STUDENT_TYPE_OPTIONS } from '../constants';
 import { useOnboarding } from '../OnboardingProvider';
 import { useSchoolSearch } from '../useSchoolSearch';
 
-// Figma 회원가입 2/4 (node 1:260). Not ported: the 학생 구분 cards (중학생/고등학생/N수생·대학생/일반인),
-// because profiles has no column for them (db-schema.md only stores school + grade 1~3).
+const TYPE_GAP = 10;
+
+// Figma 회원가입 2/4 (node 1:260). Student type is required; grade only for middle/high school students;
+// school is required for them and optional (skippable) for repeat_exam_taker / general.
 export function SchoolScreen() {
   const router = useRouter();
   const { draft, update } = useOnboarding();
   const [query, setQuery] = useState('');
   const search = useSchoolSearch(query);
 
+  const typeOption = STUDENT_TYPE_OPTIONS.find((o) => o.value === draft.studentType);
+  const hasGrade = typeOption?.hasGrade ?? false;
+  const schoolOptional = !!typeOption && !typeOption.hasGrade;
   const trimmed = query.trim();
-  const canTypeManually = search.kind === 'empty' || search.kind === 'error';
 
-  function select(school: SelectedSchool) {
+  // Middle school students only see 중학교, high school students only 고등학교 (filtered client-side).
+  const kind = typeOption?.schoolKind ?? null;
+  const schools =
+    search.kind === 'results'
+      ? search.schools.filter((s) => !kind || s.school_kind === kind)
+      : [];
+  const noResults = search.kind === 'empty' || (search.kind === 'results' && schools.length === 0);
+  const canTypeManually = noResults || search.kind === 'error';
+
+  function selectType(value: StudentType) {
+    const next = STUDENT_TYPE_OPTIONS.find((o) => o.value === value);
+    const nextKind = next?.schoolKind ?? null;
+    const keepSchool =
+      !draft.school || !draft.school.school_kind || !nextKind || draft.school.school_kind === nextKind;
+    update({
+      studentType: value,
+      grade: next?.hasGrade ? draft.grade : null,
+      school: keepSchool ? draft.school : null,
+    });
+  }
+
+  function selectSchool(school: SelectedSchool) {
     update({ school });
   }
+
+  const canContinue = !!typeOption && (!hasGrade || (!!draft.grade && !!draft.school));
 
   return (
     <OnboardingLayout
@@ -35,23 +64,40 @@ export function SchoolScreen() {
       onBack={() => router.back()}
       cta={{
         label: '확인',
-        disabled: !draft.school || !draft.grade,
+        disabled: !canContinue,
         onPress: () => router.push('/(onboarding)/concern'),
       }}
     >
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>학년</Text>
-        <GradeSelector value={draft.grade} onChange={(grade) => update({ grade })} />
+      <View style={styles.types} accessibilityRole="radiogroup">
+        {STUDENT_TYPE_OPTIONS.map((option) => (
+          <StudentTypeCard
+            key={option.value}
+            label={option.label}
+            description={option.description}
+            selected={draft.studentType === option.value}
+            onPress={() => selectType(option.value)}
+          />
+        ))}
       </View>
+
+      {hasGrade ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>학년</Text>
+          <GradeSelector value={draft.grade} onChange={(grade) => update({ grade })} />
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <View>
           <Text style={styles.sectionLabel}>학교명</Text>
-          <Text style={styles.hint}>내신 일정과 과목 연동에 쓰여요.</Text>
+          <Text style={styles.hint}>
+            {schoolOptional
+              ? '선택 사항이에요. 건너뛰어도 돼요.'
+              : '내신 일정과 과목 연동에 쓰여요.'}
+          </Text>
         </View>
 
-        <TextInput
-          placeholder="학교 이름으로 검색"
+        <SchoolSearchBox
           value={query}
           onChangeText={setQuery}
           maxLength={SCHOOL_QUERY_MAX}
@@ -62,11 +108,18 @@ export function SchoolScreen() {
 
         {draft.school ? (
           <View style={styles.selected} accessibilityLiveRegion="polite">
-            <Text style={styles.selectedLabel}>선택한 학교</Text>
-            <Text style={styles.selectedName}>
-              {draft.school.school_name}
-              {draft.school.school_code ? '' : ' (직접 입력)'}
-            </Text>
+            <View style={styles.selectedTexts}>
+              <Text style={styles.selectedLabel}>선택한 학교</Text>
+              <Text style={styles.selectedName}>
+                {draft.school.school_name}
+                {draft.school.school_code ? '' : ' (직접 입력)'}
+              </Text>
+            </View>
+            {schoolOptional ? (
+              <Pressable accessibilityRole="button" hitSlop={spacing[8]} onPress={() => update({ school: null })}>
+                <Text style={styles.clearSelected}>선택 취소</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -75,9 +128,9 @@ export function SchoolScreen() {
         ) : null}
         {search.kind === 'loading' ? <ActivityIndicator color={colors.green[500]} /> : null}
 
-        {search.kind === 'results' ? (
+        {schools.length > 0 ? (
           <View style={styles.list}>
-            {search.schools.map((school) => {
+            {schools.map((school) => {
               const isSelected = draft.school?.school_code === school.school_code;
               return (
                 <Pressable
@@ -85,7 +138,7 @@ export function SchoolScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                   onPress={() =>
-                    select({
+                    selectSchool({
                       school_name: school.school_name,
                       school_code: school.school_code,
                       school_kind: school.school_kind,
@@ -94,8 +147,11 @@ export function SchoolScreen() {
                   }
                   style={[styles.row, isSelected && styles.rowSelected]}
                 >
-                  <Text style={styles.rowName}>{school.school_name}</Text>
-                  {school.address ? <Text style={styles.rowAddress}>{school.address}</Text> : null}
+                  <View style={styles.rowTexts}>
+                    <Text style={styles.rowName}>{school.school_name}</Text>
+                    {school.address ? <Text style={styles.rowAddress}>{school.address}</Text> : null}
+                  </View>
+                  {isSelected ? <View style={styles.check} /> : null}
                 </Pressable>
               );
             })}
@@ -111,9 +167,7 @@ export function SchoolScreen() {
             </Text>
             <Pressable
               accessibilityRole="button"
-              onPress={() =>
-                select({ school_name: trimmed, school_code: null, school_kind: null })
-              }
+              onPress={() => selectSchool({ school_name: trimmed, school_code: null, school_kind: null })}
               style={styles.manualButton}
             >
               <Text style={styles.manualButtonText}>{`'${trimmed}' 직접 입력하기`}</Text>
@@ -126,18 +180,24 @@ export function SchoolScreen() {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: spacing[12], marginBottom: spacing[24] },
+  types: { flexDirection: 'row', flexWrap: 'wrap', gap: TYPE_GAP },
+  section: { gap: spacing[12], marginTop: spacing[16] },
   sectionLabel: { ...typography.body1, fontFamily: fontFamily.body.bold, color: colors.text.primary },
   hint: { ...typography.caption, fontFamily: fontFamily.body.regular, color: colors.neutral[500] },
   status: { ...typography.caption, color: colors.text.tertiary },
   selected: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing[12],
     padding: spacing[12],
     borderRadius: radius.lg,
     backgroundColor: colors.bg.brandSubtle,
-    gap: spacing[4],
   },
+  selectedTexts: { flex: 1, gap: spacing[4] },
   selectedLabel: { ...typography.micro, color: colors.text.brand },
   selectedName: { ...typography.body1, fontFamily: fontFamily.body.bold, color: colors.green[800] },
+  clearSelected: { ...typography.caption, color: colors.text.secondary, textDecorationLine: 'underline' },
   list: {
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -146,15 +206,29 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[12],
     paddingVertical: spacing[12],
     paddingHorizontal: spacing[16],
-    gap: spacing[4],
     borderBottomWidth: 1,
     borderBottomColor: colors.neutral[200],
   },
   rowSelected: { backgroundColor: colors.bg.brandSubtle },
+  rowTexts: { flex: 1, gap: spacing[4] },
   rowName: { ...typography.body2, fontFamily: fontFamily.body.regular, color: colors.neutral[800] },
   rowAddress: { ...typography.caption, fontFamily: fontFamily.body.regular, color: colors.text.tertiary },
+  // Check glyph drawn with borders (no SVG dependency): rotated L shape.
+  check: {
+    width: 6,
+    height: 11,
+    marginRight: spacing[4],
+    marginBottom: 3,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: colors.green[500],
+    transform: [{ rotate: '45deg' }],
+  },
   manual: { gap: spacing[8] },
   manualButton: {
     paddingVertical: spacing[12],
