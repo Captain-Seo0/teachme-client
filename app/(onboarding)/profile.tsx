@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { ProfileScreen } from '@/features/onboarding/screens/ProfileScreen';
 
-export default function ProfileScreen() {
-  return <ScreenPlaceholder title="onboarding/profile" />;
-}
+export default ProfileScreen;

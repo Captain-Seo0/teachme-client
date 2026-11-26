@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { WelcomeScreen } from '@/features/onboarding/screens/WelcomeScreen';
 
-export default function WelcomeScreen() {
-  return <ScreenPlaceholder title="onboarding/welcome" />;
-}
+export default WelcomeScreen;

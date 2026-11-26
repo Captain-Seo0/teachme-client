@@ -12,7 +12,7 @@ npx expo start
 ## 구조
 ```
 app/
-  (onboarding)/  splash, login, profile, school, concern, matched, welcome
+  (onboarding)/  splash, login, email-login, signup, profile, school, concern, welcome
   (tabs)/        index(홈), teachtok, my
   lesson/        subject, upload, student, ready, live, end, report
 src/

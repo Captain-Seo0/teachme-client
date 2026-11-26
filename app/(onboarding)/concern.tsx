@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { ConcernScreen } from '@/features/onboarding/screens/ConcernScreen';
 
-export default function ConcernScreen() {
-  return <ScreenPlaceholder title="onboarding/concern" />;
-}
+export default ConcernScreen;

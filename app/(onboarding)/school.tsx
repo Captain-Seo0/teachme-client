@@ -1,5 +1,3 @@
-import { ScreenPlaceholder } from '@/components/ScreenPlaceholder';
+import { SchoolScreen } from '@/features/onboarding/screens/SchoolScreen';
 
-export default function SchoolScreen() {
-  return <ScreenPlaceholder title="onboarding/school" />;
-}
+export default SchoolScreen;
