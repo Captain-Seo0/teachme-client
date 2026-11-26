@@ -39,5 +39,24 @@ React Native + Expo(expo-router, TypeScript) 클라이언트. 백엔드는 Supab
 - 패키지는 `npx expo install <pkg>`로 설치한다 (SDK 호환 버전 해결).
 - Expo SDK는 변경이 잦으므로 API를 쓰기 전 `AGENTS.md`의 안내대로 버전별 공식 문서를 확인한다.
 
+## 디자인 시스템
+출처: Figma "TeachMe 개발" 파일의 디자인 시스템 노드(1:493). 화면은 다른 페이지에 있으며 여기서는 토큰/공통 컴포넌트만 다룬다.
+
+**토큰 (`src/theme/`, `@/theme`에서 import)**
+- `colors`: green 50~900(500=brand), neutral 0~800, semantic(success/warning/error/info + Bg), illustration(교실 팔레트), 역할 토큰 `bg`/`text`/`border`. 다크 역할 값은 `darkColors`에 있으나 컴포넌트는 아직 라이트만 사용.
+- `typography`: displayLg/Md, heading1~3, title1~2, subtitle, body1~2, caption, micro. 굵기는 `fontFamily`에 포함되므로 `fontWeight`를 쓰지 않는다.
+- `spacing`(4·8·12·16·20·24·32·40, 키=px), `layout`(screenMargin 20, cardGap 12, ctaHeight 56), `radius`(xs~3xl, full), `shadow`(none/e1/e2/brand).
+- 폰트 로딩: `src/theme/fonts.ts`의 `fontAssets`를 `useAppFonts`(`src/hooks/`)가 로드하고, `app/_layout.tsx`에서 로딩이 끝날 때까지 스플래시를 유지한다.
+
+**공통 컴포넌트 (`src/components/`)**: `Button`(variant primary/secondary/outline/text, size L/M, disabled·loading·fullWidth·leftIcon·rightIcon), `TextInput`(label, helperText, error, disabled), `Checkbox`(약관 동의용). 그 외는 각 기능 브랜치에서 필요할 때 추가한다.
+
+**못 옮긴 항목 / 확인 필요**
+- **Paperlogy(display 폰트)**: 폰트 파일과 라이선스 확인이 필요해 번들하지 않았다. 현재 `fontFamily.display`는 Noto Sans KR Bold로 대체. 파일을 확보하면 `fonts.ts`와 `typography.ts`의 TODO 한 곳만 바꾸면 된다.
+- Figma의 "Nanum Pen"은 Google Fonts의 Nanum Pen Script로 가정했다. 다른 폰트라면 알려줘야 한다.
+- 다크 모드 컴포넌트 적용, Button의 S 크기·icon 버튼·Focus 링, TextInput의 leftIcon·clearable·성공 메시지 색·에러 아이콘, Checkbox 외 선택 컨트롤(radio/switch/segmented), Chip/Badge, Card, Navigation, Feedback은 구현하지 않았다.
+- Figma 변수/스타일이 아닌 프레임에 그려진 값이라 토큰이 아니다. 스케일에 없는 컴포넌트 고유 값(Button M 반경 14, Input 라벨 간격 6·테두리 1.5·높이 52, Checkbox 18)은 해당 컴포넌트 안의 상수로 두었다.
+- 디자인 문서 내 불일치: Button M 라벨이 상태 표에서는 15, 크기 표에서는 14(코드는 15 = `subtitle` 사용). 흰 글자 on green.500은 대비 2.6:1(AA 미달)이라는 디자인 메모가 있으나 디자인대로 구현했다.
+- 그림자는 CSS blur를 RN `shadowRadius`(blur/2)로 환산했고, Android는 `elevation` 근사값이다.
+
 ## 환경변수
 `.env.example`을 `.env`로 복사해 사용. `EXPO_PUBLIC_*`는 앱 번들에 노출되므로 anon key만 둔다. service key 금지.
