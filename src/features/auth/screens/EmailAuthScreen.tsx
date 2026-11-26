@@ -70,7 +70,7 @@ export function EmailAuthScreen({ mode }: { mode: Mode }) {
         // On success the root layout reacts to the new session.
       } else {
         const { needsEmailConfirmation } = await signUpWithEmail(email, password);
-        // TODO: after sign-up, send new users to '/(onboarding)/profile' (see constants.ts).
+        // New users (no profile yet) are routed to onboarding by the root layout.
         if (needsEmailConfirmation) setConfirmationSent(true);
       }
     } catch (e) {
